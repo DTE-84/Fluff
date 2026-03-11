@@ -28,10 +28,10 @@ export default function Layout({ children, activeTab, setActiveTab }: LayoutProp
             Fluff
           </h1>
           <a 
-            href="https://dte-84.github.io/DTE-Solutions-Hub/" 
+            href="https://dte-84.github.io/DTE-Solutions-Hub/fluff-breakdown.html" 
             className="text-[8px] font-mono uppercase tracking-[0.2em] text-[#4A4A5A] hover:text-[#30C476] transition-colors mt-1"
           >
-            &larr; Exit to Hub
+            &larr; Exit to Overview
           </a>
         </div>
         <button className="flex items-center gap-2 group">
