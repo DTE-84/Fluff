@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 
-const GEMINI_API_KEY = "AIzaSyDffIitZGWuLjESRkbdUiRfPC4DTLW-hRE";
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 export default function SwingAnalyst() {
   const [imageUri, setImageUri] = useState<string | null>(null);

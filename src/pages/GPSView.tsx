@@ -26,6 +26,8 @@ export default function GPSView() {
   const [distance, setDistance] = useState<number | null>(null);
   const [isListening, setIsListening] = useState(false);
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [gpsError, setGpsError] = useState<string | null>(null);
+  const [isSimulating, setIsSimulating] = useState(false);
 
   useEffect(() => {
     if ("geolocation" in navigator) {
@@ -33,17 +35,43 @@ export default function GPSView() {
         (position) => {
           const { latitude, longitude } = position.coords;
           setUserLocation({ lat: latitude, lng: longitude });
+          setGpsError(null);
           
           // Calculate the real distance to the pin
-          setDistance(getDistanceInYards(latitude, longitude, HOLE_LAT, HOLE_LNG));
+          const dist = getDistanceInYards(latitude, longitude, HOLE_LAT, HOLE_LNG);
+          setDistance(dist);
         },
-        (err) => console.error("GPS Error: ", err),
-        // PREMIUM UPGRADE 2: Force device satellite chip instead of cell towers
-        { enableHighAccuracy: true, maximumAge: 0 } 
+        (err) => {
+          console.error("GPS Error: ", err);
+          setGpsError(err.message);
+          // If we fail or are in a snowstorm/indoors, we might want to simulate for demo
+        },
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 } 
       );
       return () => navigator.geolocation.clearWatch(watchId);
+    } else {
+      setGpsError("Geolocation not supported");
     }
   }, []);
+
+  // Simulation Mode for testing/demo when not on course
+  const toggleSimulation = () => {
+    if (!isSimulating) {
+      setIsSimulating(true);
+      setGpsError(null);
+      let simulatedDist = 155;
+      const interval = setInterval(() => {
+        simulatedDist -= Math.floor(Math.random() * 2);
+        if (simulatedDist < 0) simulatedDist = 0;
+        setDistance(simulatedDist);
+      }, 2000);
+      (window as any).simInterval = interval;
+    } else {
+      setIsSimulating(false);
+      clearInterval((window as any).simInterval);
+      setDistance(null);
+    }
+  };
 
   // PREMIUM UPGRADE 3: Smart Voice Assistant
   const speakDistance = () => {
@@ -120,7 +148,31 @@ export default function GPSView() {
           <h4 className="text-sm font-semibold text-[#FCF6EB] leading-tight">Augusta National GC</h4>
           <p className="text-xs text-[#4A4A5A] mt-0.5">Hole 12 • Par 3 • 155 Yards</p>
         </div>
-      </div>
-    </div>
-  );
-}
+        </div>
+
+        {gpsError && !isSimulating && (
+        <div className="rounded-[22px] p-4 bg-red-500/10 border border-red-500/20 text-center">
+          <p className="text-[10px] text-red-400 uppercase tracking-widest mb-3">Satellite Signal Lost: {gpsError}</p>
+          <button 
+            onClick={toggleSimulation}
+            className="px-4 py-2 bg-[#30C476] text-black text-[10px] font-black uppercase tracking-widest rounded-lg"
+          >
+            Initialize Simulation
+          </button>
+        </div>
+        )}
+
+        {isSimulating && (
+        <div className="rounded-[22px] p-4 bg-[#30C476]/10 border border-[#30C476]/20 text-center">
+          <p className="text-[10px] text-[#30C476] uppercase tracking-widest mb-2">Simulated Telemetry Active</p>
+          <button 
+            onClick={toggleSimulation}
+            className="text-[10px] text-gray-400 underline uppercase tracking-widest"
+          >
+            End Simulation
+          </button>
+        </div>
+        )}
+        </div>
+        );
+        }
