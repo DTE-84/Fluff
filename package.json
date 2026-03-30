@@ -6,7 +6,31 @@
     "framer-motion": "^12.36.0",
     "lucide-react": "^0.577.0",
     "motion": "^12.36.0",
+    "package.json": "^2.0.1",
     "react-markdown": "^10.1.0",
     "recharts": "^3.8.0"
-  }
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  },
+  "name": "fluff",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DTE-84/Fluff.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/DTE-84/Fluff/issues"
+  },
+  "homepage": "https://github.com/DTE-84/Fluff#readme"
 }

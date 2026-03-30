@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { User, Mail, Lock, Eye, EyeOff, LoaderCircle, ArrowRight, CircleAlert, CircleCheck, Zap } from 'lucide-react';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../firebase'; // Import from the firebase.ts file we created
 
 interface LoginProps {
@@ -16,6 +16,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [isResetSent, setIsResetSent] = useState(false);
 
   const getErrorMessage = (code: string) => {
     switch (code) {
@@ -26,6 +27,24 @@ export default function Login({ onLoginSuccess }: LoginProps) {
       case "auth/wrong-password": return "Incorrect password. Please try again.";
       case "auth/invalid-credential": return "Invalid email or password. Please check your credentials.";
       default: return "Authentication failed. Please try again.";
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError("Please enter your email to reset password.");
+      return;
+    }
+    setIsLoading(true);
+    setError("");
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setIsResetSent(true);
+      setError(""); // Clear any previous errors
+    } catch (err: any) {
+      setError(getErrorMessage(err.code));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -122,6 +141,13 @@ export default function Login({ onLoginSuccess }: LoginProps) {
               </div>
             )}
 
+            {isResetSent && (
+              <div className="flex items-center gap-3 mb-6 p-4 bg-[#30C476]/10 border border-[#30C476]/20 rounded-2xl">
+                <CircleCheck size={18} className="text-[#30C476] shrink-0" />
+                <p className="text-xs text-[#30C476] font-semibold tracking-tight">Password reset email sent. Check your inbox.</p>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="flex flex-col gap-6">
               {!isLogin && (
                 <div className="flex flex-col gap-3 group/name">
@@ -150,9 +176,23 @@ export default function Login({ onLoginSuccess }: LoginProps) {
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
-              </div>
+                </div>
 
-              <button type="submit" disabled={isLoading || success} className="mt-2 w-full h-14 flex items-center justify-center gap-4 bg-[#30C476] hover:bg-[#6EEEA8] text-[#0A0907] rounded-2xl font-black text-xs uppercase tracking-[0.3em] shadow-[0_8px_32px_-4px_rgba(48,196,118,0.45)] transition-all active:scale-[0.97]">
+                {isLogin && (
+                <div className="flex justify-end px-2 -mt-4">
+                  <button 
+                    type="button" 
+                    onClick={handleForgotPassword}
+                    disabled={isLoading || isResetSent}
+                    className="text-[10px] font-black uppercase tracking-widest text-[#30C476]/60 hover:text-[#30C476] transition-colors disabled:opacity-50"
+                  >
+                    {isResetSent ? "Reset Email Sent" : "Forgot Security Key?"}
+                  </button>
+                </div>
+                )}
+
+                <button type="submit"
+ disabled={isLoading || success} className="mt-2 w-full h-14 flex items-center justify-center gap-4 bg-[#30C476] hover:bg-[#6EEEA8] text-[#0A0907] rounded-2xl font-black text-xs uppercase tracking-[0.3em] shadow-[0_8px_32px_-4px_rgba(48,196,118,0.45)] transition-all active:scale-[0.97]">
                 {isLoading ? <LoaderCircle className="animate-spin" /> : <><span >{isLogin ? "Enter Clubhouse" : "Join the Tour"}</span><ArrowRight size={18} /></>}
               </button>
             </form>
